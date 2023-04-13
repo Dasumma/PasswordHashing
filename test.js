@@ -10,16 +10,18 @@ server.listen(3000, ()=>{
 
 app.get('/', function (req, res){
   res.sendFile(__dirname + "/pages/login/login.html");
-})
+});
+
+app.use(express.static('pages'));
 
 app.get('/createuser', function (req, res){
   res.sendFile(__dirname + "/pages/createuser/createuser.html")
-})
+});
 
 app.get('/get-data', function (req, res){
   res.send('Hello World');
 });
-
+/*
 
 var connection = mysql.createConnection({
   host     : 'localhost',
@@ -36,3 +38,4 @@ connection.query("SELECT * FROM users where username= 'Dasumma1'", function (err
 });
  
 connection.end();
+*/
