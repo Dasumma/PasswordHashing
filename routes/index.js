@@ -20,8 +20,9 @@ router.post('/register', function(request, response, next){
 
     let user_email_address = request.body.user_email_address;
     let user_password = request.body.user_password;
-    let hash = crypto.randomBytes(10).toString('hex');
-    user_password = hash + user_password;
+    let user_hash = crypto.randomBytes(10).toString('hex');
+    user_password = user_hash + user_password;
+    user_password = md5(user_password);
 
     if(!(user_email_address && user_password)){
         response.send("Please enter Email Address and Password Details");
@@ -34,7 +35,7 @@ router.post('/register', function(request, response, next){
     `;
     let insert = `
     INSERT INTO USER_LOGIN (USER_UNAME, USER_PSW, USER_HASH)
-    VALUES ("${user_email_address}", "${user_password}", "${hash}")
+    VALUES ("${user_email_address}", "${user_password}", "${user_hash}")
     `
 
     database.query(query, function(error, data){  
@@ -72,7 +73,9 @@ router.post('/login', function(request, response, next){
             return;
         }
         let user_hash = data[0].USER_HASH;
-        if(data[0].USER_PSW != (user_hash + user_password)){
+        user_password = user_hash + user_password;
+        user_password = md5(user_password);
+        if(data[0].USER_PSW != user_password){
             response.send('Incorrect Password');
             response.end();
             return;
