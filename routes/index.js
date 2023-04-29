@@ -7,6 +7,13 @@ var router = express.Router();
 var database = require('../database');
 const LFSR = require('lfsr');
 
+const textToBinary = (str = '') => {
+    let res = '';
+    res = str.split('').map(char => {
+       return char.charCodeAt(0).toString(2);
+    }).join(' ');
+    return res;
+ };
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express', session : req.session });
@@ -22,7 +29,10 @@ router.post('/register', function(request, response, next){
     let user_password = request.body.user_password;
     let user_hash = crypto.randomBytes(10).toString('hex');
     user_password = user_hash + user_password;
-    user_password = md5(user_password);
+    let user_passwordBin = textToBinary(user_password);
+    lfsr = new LFSR(user_passwordBin.size, parseInt(user_passwordBin, 2));
+    user_password = md5(lfsr.seq(30));
+
 
     if(!(user_email_address && user_password)){
         response.send("Please enter Email Address and Password Details");
@@ -74,7 +84,10 @@ router.post('/login', function(request, response, next){
         }
         let user_hash = data[0].USER_HASH;
         user_password = user_hash + user_password;
-        user_password = md5(user_password);
+        let user_passwordBin = textToBinary(user_password);
+        lfsr = new LFSR(user_passwordBin.size, parseInt(user_passwordBin, 2));
+        user_password = md5(lfsr.seq(30));
+
         if(data[0].USER_PSW != user_password){
             response.send('Incorrect Password');
             response.end();
