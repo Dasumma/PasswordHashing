@@ -1,19 +1,29 @@
 var express = require('express');
 var crypto = require ('crypto');
 var md5 = require('md5');
-var lfsr = require('lfsr');
 var router = express.Router();
 
 var database = require('../database');
-const LFSR = require('lfsr');
 
-const textToBinary = (str = '') => {
-    let res = '';
-    res = str.split('').map(char => {
-       return char.charCodeAt(0).toString(2);
-    }).join(' ');
-    return res;
- };
+
+
+const lfsr = (value, leftmost) => {  
+    var tap1val = (value >> 1);
+    var tap2val = (value >> (leftmost/2+1));
+    console.log(tap1val);
+    console.log(tap2val);
+    var leftmostBit = tap1val ^ tap2val;
+    value = ((leftmostBit << 15) | (value >>> 1)) >>> 0;
+    return value;
+}
+
+const textToHex = (str) => {
+    var hex = '';
+    for(var i=0;i<str.length;i++) {
+        hex += ''+str.charCodeAt(i).toString(16);
+    }
+    return hex;
+}
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express', session : req.session });
@@ -29,9 +39,12 @@ router.post('/register', function(request, response, next){
     let user_password = request.body.user_password;
     let user_hash = crypto.randomBytes(10).toString('hex');
     user_password = user_hash + user_password;
-    let user_passwordBin = textToBinary(user_password);
-    lfsr = new LFSR(user_passwordBin.size, parseInt(user_passwordBin, 2));
-    user_password = md5(lfsr.seq(30));
+    user_password = textToHex(user_password);
+    console.log(user_password);
+    console.log(user_password.length);
+    user_password = lfsr(user_password, user_password.length*4);
+    console.log(user_password);
+    user_password = md5(user_password);
 
 
     if(!(user_email_address && user_password)){
@@ -84,9 +97,9 @@ router.post('/login', function(request, response, next){
         }
         let user_hash = data[0].USER_HASH;
         user_password = user_hash + user_password;
-        let user_passwordBin = textToBinary(user_password);
-        lfsr = new LFSR(user_passwordBin.size, parseInt(user_passwordBin, 2));
-        user_password = md5(lfsr.seq(30));
+        user_password = textToHex(user_password);
+        user_password = lfsr(user_password, user_password.length*4);
+        user_password = md5(user_password);
 
         if(data[0].USER_PSW != user_password){
             response.send('Incorrect Password');
