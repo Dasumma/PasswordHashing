@@ -21,12 +21,12 @@ const lfsr = (value) => {
     }
     return value2.join("");
 }
-const textToHex = (str) => {
-    var hex = '';
+const textToBin = (str) => {
+    var bin = '';
     for(var i=0;i<str.length;i++) {
-        hex += ''+str.charCodeAt(i).toString(2);
+        bin += ''+str.charCodeAt(i).toString(2);
     }
-    return hex;
+    return bin;
 }
 const lfsrFunction = (binNum, xor) => {
     let charArr = Array.from(binNum);
